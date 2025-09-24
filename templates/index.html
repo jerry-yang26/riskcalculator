@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mortgage Risk Calculator - Should I Buy Now?</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .risk-high { color: #dc3545; }
+        .risk-moderate { color: #fd7e14; }
+        .risk-low-moderate { color: #ffc107; }
+        .risk-low { color: #198754; }
+        
+        .header-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem 0;
+        }
+        
+        .info-box {
+            background-color: #f8f9fa;
+            border-left: 4px solid #007bff;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="header-section">
+        <div class="container">
+            <h1 class="display-4">Should I Buy A Home Now?</h1>
+            <p class="lead">Based on research showing how economic timing affects mortgage performance</p>
+        </div>
+    </div>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Personal Financial Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="riskForm">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="monthly_income" class="form-label">Monthly Gross Income</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">$</span>
+                                            <input type="number" class="form-control" id="monthly_income" 
+                                                   name="monthly_income" required min="0" step="100">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="monthly_debt" class="form-label">Monthly Debt Payments</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">$</span>
+                                            <input type="number" class="form-control" id="monthly_debt" 
+                                                   name="monthly_debt" required min="0" step="50">
+                                        </div>
+                                        <div class="form-text">Include car loans, credit cards, student loans, etc.</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="monthly_savings" class="form-label">Monthly Savings</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">$</span>
+                                            <input type="number" class="form-control" id="monthly_savings" 
+                                                   name="monthly_savings" required min="0" step="50">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <hr>
+                            <h6>Current Economic Conditions</h6>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="current_rate" class="form-label">Current Mortgage Rate (%)</label>
+                                        <input type="number" class="form-control" id="current_rate" 
+                                               name="current_rate" value="7.0" step="0.1" min="0" max="20">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="rate_6_months_ago" class="form-label">Rate 6 Months Ago (%)</label>
+                                        <input type="number" class="form-control" id="rate_6_months_ago" 
+                                               name="rate_6_months_ago" value="6.5" step="0.1" min="0" max="20">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="current_inflation" class="form-label">Current Inflation (%)</label>
+                                        <input type="number" class="form-control" id="current_inflation" 
+                                               name="current_inflation" value="3.5" step="0.1" min="0" max="20">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary btn-lg w-100">
+                                Calculate My Risk Score
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="info-box">
+                    <h6>Why This Matters</h6>
+                    <p><small>
+                        Recent research shows that homebuyers who purchased in 2022 experienced higher 
+                        delinquency rates due to poor economic timing - rising rates, high inflation, 
+                        and declining savings all contributed to financial stress.
+                    </small></p>
+                </div>
+                
+                <div class="info-box">
+                    <h6>What We Analyze</h6>
+                    <ul class="small">
+                        <li>Interest rate trends</li>
+                        <li>Current inflation levels</li>
+                        <li>Your debt-to-income ratio</li>
+                        <li>Your savings rate</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Results Section -->
+        <div id="results" class="row mt-4" style="display: none;">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Your Risk Assessment</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="riskResults"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('riskForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            
+            try {
+                const response = await fetch('/calculate', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    displayResults(result);
+                } else {
+                    alert('Error: ' + result.error);
+                }
+            } catch (error) {
+                alert('Error calculating risk: ' + error.message);
+            }
+        });
+        
+        function displayResults(result) {
+            const resultsDiv = document.getElementById('riskResults');
+            const riskLevel = result.advice.level;
+            const riskClass = getRiskClass(riskLevel);
+            
+            let html = `
+                <div class="text-center mb-4">
+                    <h2 class="${riskClass}">Risk Level: ${riskLevel}</h2>
+                    <h3>Overall Risk Score: ${result.risk_score}/4.0</h3>
+                </div>
+                
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h6>Individual Risk Factors:</h6>
+                        <ul>
+                            <li>Interest Rate Trend: ${result.individual_scores.interest_rate}/4</li>
+                            <li>Inflation Level: ${result.individual_scores.inflation}/4</li>
+                            <li>Your Savings Rate: ${result.individual_scores.savings}/4</li>
+                            <li>Your Debt-to-Income: ${result.individual_scores.debt_to_income}/4</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Recommendations:</h6>
+                        <ul>
+            `;
+            
+            result.advice.advice.forEach(advice => {
+                html += `<li>${advice}</li>`;
+            });
+            
+            html += `
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="alert alert-info">
+                    <strong>Remember:</strong> This calculator is based on research findings and economic indicators. 
+                    Always consult with a financial advisor and mortgage professional before making major financial decisions.
+                </div>
+            `;
+            
+            resultsDiv.innerHTML = html;
+            document.getElementById('results').style.display = 'block';
+            
+            // Scroll to results
+            document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function getRiskClass(riskLevel) {
+            if (riskLevel.includes('HIGH')) return 'risk-high';
+            if (riskLevel.includes('MODERATE') && !riskLevel.includes('LOW')) return 'risk-moderate';
+            if (riskLevel.includes('LOW-MODERATE')) return 'risk-low-moderate';
+            return 'risk-low';
+        }
+    </script>
+</body>
+</html>
