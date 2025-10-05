@@ -7,7 +7,7 @@ calculator = MortgageRiskCalculator()
 @app.route('/')
 def index():
     return render_template('index.html')
-
+/*
 @app.route('/calculate', methods=['POST'])
 def calculate_risk():
     try:
@@ -38,7 +38,7 @@ def calculate_risk():
         
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
-
+*/
 import os
 
 if __name__ == '__main__':
